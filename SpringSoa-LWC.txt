@@ -1,0 +1,44 @@
+//2. lightning web component that can query a list of 10 most recently created accounts.
+
+Apex Controller :
+
+public with sharing class getRecordDataController {
+ @AuraEnabled(cacheable=true)
+  public static List<Account> getAccounts() {
+  return [Select id,Name FROM Account ORDER BY CreatedDate DESC LIMIT 10];
+
+  }
+}
+
+getDataDisplayData.html :
+
+<template>
+     <template for:each={wiredAccounts.data} for:item="acc">
+          <p key={acc.id}>
+               {acc.Name}
+          </p>
+     </template>
+</template>
+
+getDataDisplayData.js :
+
+import { LightningElement, track, wire} from 'lwc';
+import getAccounts from '@salesforce/apex/getRecordDataController.getAccounts';
+
+export default class GetDataDisplayData extends LightningElement {
+     @track columns = [
+          { label: 'Name', fieldName: 'Name' },
+          { label: 'Id', fieldName: 'Id'}
+      ];
+     @track accountList;
+
+     //Method 2
+     @wire (getAccounts) wiredAccounts({data,error}){
+          if (data) {
+               this.accountList = data;
+          console.log(data); 
+          } else if (error) {
+          console.log(error);
+          }
+     }
+}
